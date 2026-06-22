@@ -6,6 +6,102 @@
     <title>Centro de Control Domótico</title>
     <!-- Enlace a estilos CSS e importación de fuentes desde el servidor -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        /* Modal de actualización GitHub */
+        .deploy-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(6px);
+            z-index: 100;
+            align-items: center;
+            justify-content: center;
+        }
+        .deploy-overlay.active { display: flex; }
+        .deploy-modal {
+            background: var(--card-bg);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 20px;
+            padding: 36px;
+            width: 90%;
+            max-width: 480px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+        }
+        .deploy-modal h2 { font-size: 1.3rem; margin-bottom: 8px; }
+        .deploy-modal p  { color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 20px; }
+        .deploy-input {
+            width: 100%;
+            background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 12px;
+            color: var(--text-primary);
+            padding: 12px 16px;
+            font-family: inherit;
+            font-size: 0.95rem;
+            outline: none;
+            box-sizing: border-box;
+            margin-bottom: 20px;
+            transition: border-color 0.2s;
+        }
+        .deploy-input:focus { border-color: rgba(99,179,237,0.5); }
+        .deploy-actions { display: flex; gap: 12px; justify-content: flex-end; }
+        .deploy-cancel {
+            background: transparent;
+            border: 1px solid rgba(255,255,255,0.15);
+            color: var(--text-secondary);
+            padding: 10px 22px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-family: inherit;
+            transition: var(--transition);
+        }
+        .deploy-cancel:hover { background: rgba(255,255,255,0.07); }
+        .deploy-confirm {
+            background: linear-gradient(135deg, #22c55e, #16a34a);
+            border: none;
+            color: white;
+            padding: 10px 22px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-family: inherit;
+            font-weight: 600;
+            transition: var(--transition);
+        }
+        .deploy-confirm:hover { transform: scale(1.03); box-shadow: 0 4px 15px rgba(34,197,94,0.3); }
+        .deploy-confirm:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+        .deploy-log {
+            background: rgba(0,0,0,0.3);
+            border-radius: 10px;
+            padding: 14px;
+            font-family: monospace;
+            font-size: 0.82rem;
+            color: #86efac;
+            max-height: 180px;
+            overflow-y: auto;
+            display: none;
+            white-space: pre-wrap;
+            margin-top: 10px;
+        }
+        .update-btn {
+            background: rgba(34, 197, 94, 0.12);
+            color: #4ade80;
+            border: 1px solid rgba(34, 197, 94, 0.3);
+            padding: 12px 30px;
+            border-radius: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            font-size: 0.9rem;
+            font-family: inherit;
+            margin-top: 12px;
+        }
+        .update-btn:hover {
+            background: rgba(34, 197, 94, 0.25);
+            box-shadow: 0 4px 15px rgba(34, 197, 94, 0.2);
+            transform: scale(1.02);
+        }
+    </style>
 </head>
 <body>
     <div class="landing-wrapper">
@@ -29,20 +125,109 @@
                 </a>
             </div>
             
+            <!-- Botón actualizar GitHub (solo útil en local) -->
+            <button onclick="abrirDeploy()" class="update-btn">🚀 Actualizar en GitHub</button>
+            
             <!-- Botón para finalizar la ejecución del script servidor en local -->
-            <button onclick="apagarServidorLocal()" class="shutdown-btn">🛑 Apagar Servidor Local</button>
+            <button onclick="apagarServidorLocal()" class="shutdown-btn" style="margin-top: 8px;">🛑 Apagar Servidor Local</button>
+        </div>
+    </div>
+
+    <!-- Modal de deploy a GitHub -->
+    <div class="deploy-overlay" id="deploy-overlay">
+        <div class="deploy-modal">
+            <h2>🚀 Actualizar en GitHub</h2>
+            <p>Describe brevemente los cambios realizados. Esto creará un commit y subirá el código a GitHub.</p>
+            <input 
+                type="text" 
+                id="deploy-msg" 
+                class="deploy-input" 
+                placeholder="Ej: fix: corregido estado del aire acondicionado"
+                maxlength="100"
+            >
+            <div class="deploy-actions">
+                <button class="deploy-cancel" onclick="cerrarDeploy()">Cancelar</button>
+                <button class="deploy-confirm" id="deploy-btn" onclick="ejecutarDeploy()">Subir a GitHub</button>
+            </div>
+            <div class="deploy-log" id="deploy-log"></div>
         </div>
     </div>
 
     <script>
+        // Abrir el modal de deploy
+        function abrirDeploy() {
+            document.getElementById('deploy-overlay').classList.add('active');
+            document.getElementById('deploy-msg').focus();
+            document.getElementById('deploy-log').style.display = 'none';
+            document.getElementById('deploy-log').textContent = '';
+            document.getElementById('deploy-btn').disabled = false;
+            document.getElementById('deploy-btn').textContent = 'Subir a GitHub';
+        }
+
+        // Cerrar el modal de deploy
+        function cerrarDeploy() {
+            document.getElementById('deploy-overlay').classList.remove('active');
+        }
+
+        // Ejecutar el deploy llamando al endpoint del servidor
+        async function ejecutarDeploy() {
+            const msg = document.getElementById('deploy-msg').value.trim() || 'update: cambios varios';
+            const btn = document.getElementById('deploy-btn');
+            const log = document.getElementById('deploy-log');
+
+            btn.disabled = true;
+            btn.textContent = '⏳ Subiendo...';
+            log.style.display = 'block';
+            log.textContent = '> Iniciando actualización en GitHub...\n';
+
+            try {
+                const res = await fetch('/api/deploy', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: msg })
+                });
+                const data = await res.json();
+
+                log.textContent += data.output || '';
+
+                if (data.status === 'success') {
+                    log.textContent += '\n✅ ¡Código subido a GitHub correctamente!\n';
+                    log.textContent += '\n📋 Ahora en PythonAnywhere ejecuta:\n';
+                    log.textContent += '   cd /home/cristajon && git pull\n';
+                    if (data.reload_needed) {
+                        log.textContent += '\n⚠️  Has cambiado servidor.py: haz Reload en la pestaña Web.\n';
+                    } else {
+                        log.textContent += '\n✅ No necesitas Reload. Recarga el navegador con Ctrl+F5.\n';
+                    }
+                    btn.textContent = '✅ ¡Listo!';
+                } else {
+                    log.textContent += '\n❌ Error al subir. Revisa los mensajes.\n';
+                    btn.disabled = false;
+                    btn.textContent = 'Reintentar';
+                }
+            } catch (e) {
+                log.textContent += '\n❌ Error de conexión con el servidor.\n';
+                btn.disabled = false;
+                btn.textContent = 'Reintentar';
+            }
+        }
+
+        // Cerrar modal con tecla ESC
+        document.addEventListener('keydown', e => {
+            if (e.key === 'Escape') cerrarDeploy();
+        });
+
+        // Confirmar con ENTER en el input
+        document.getElementById('deploy-msg').addEventListener('keydown', e => {
+            if (e.key === 'Enter') ejecutarDeploy();
+        });
+
         // Función asíncrona para solicitar el apagado del servidor local
         async function apagarServidorLocal() {
             if (confirm("¿Estás seguro de que deseas detener el servidor local? Las conexiones locales y la interfaz web dejarán de responder.")) {
                 try {
-                    // Enviar petición POST al endpoint de apagado
                     await fetch('/api/shutdown', { method: 'POST' });
                 } catch (e) {
-                    // Si falla el fetch por caída de conexión del servidor, mostramos el mensaje de apagado exitoso
                     document.body.innerHTML = `
                         <div class="landing-wrapper">
                             <div class="landing-card" style="text-align: center;">
@@ -58,3 +243,4 @@
     </script>
 </body>
 </html>
+

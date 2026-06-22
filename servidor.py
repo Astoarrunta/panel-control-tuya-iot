@@ -181,6 +181,44 @@ def send_command():
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)})
 
+# Endpoint de actualización GitHub (solo disponible en modo LOCAL)
+@app.route('/api/deploy', methods=['POST'])
+def deploy():
+    if MODE != 'local':
+        return jsonify({"status": "error", "message": "Solo disponible en modo local"}), 403
+    
+    data = request.json
+    msg = data.get('message', 'update: cambios varios')
+    
+    try:
+        import subprocess
+        # Archivos cuya modificación requiere Reload en PythonAnywhere
+        REQUIEREN_RELOAD = ["servidor.py"]
+        
+        # Detectar si hay cambios y qué archivos se modificaron
+        status_res = subprocess.run(
+            ["git", "status", "--porcelain"],
+            capture_output=True, text=True
+        )
+        archivos_cambiados = [l[3:].strip() for l in status_res.stdout.splitlines()]
+        reload_needed = any(r in archivos_cambiados for r in REQUIEREN_RELOAD)
+        
+        # Ejecutar git add + commit + push
+        salida = ""
+        for cmd in [
+            ["git", "add", "."],
+            ["git", "commit", "-m", msg],
+            ["git", "push", "origin", "main"]
+        ]:
+            res = subprocess.run(cmd, capture_output=True, text=True, encoding="utf-8", errors="replace")
+            salida += res.stdout + res.stderr
+            if res.returncode != 0 and "nothing to commit" not in res.stdout:
+                return jsonify({"status": "error", "output": salida})
+        
+        return jsonify({"status": "success", "output": salida, "reload_needed": reload_needed})
+    except Exception as e:
+        return jsonify({"status": "error", "output": str(e)})
+
 # Ruta secreta para ordenar el apagado del proceso CMD
 @app.route('/api/shutdown', methods=['POST'])
 def shutdown():

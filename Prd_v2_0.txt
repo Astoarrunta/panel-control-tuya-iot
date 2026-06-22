@@ -1,0 +1,87 @@
+Aquí tienes el **Documento de Requisitos del Producto (PRD)** detallado para tu proyecto. Este archivo te servirá como "hoja de ruta" técnica y funcional para futuras actualizaciones o si decides compartir el proyecto con alguien más.
+
+Puedes copiar este contenido y guardarlo en un archivo llamado `PRD.md`.
+
+---
+
+# PRD: Dashboard Domótico Cloud (Tuya Control)
+
+## 1. Visión General
+
+El proyecto consiste en una aplicación web ligera y segura que permite monitorear y controlar dispositivos domóticos vinculados a la plataforma **Tuya Cloud** (Smart Life). La aplicación actúa como un puente entre la API de Tuya y un interfaz de usuario web accesible desde cualquier dispositivo, garantizando la privacidad mediante autenticación básica.
+
+## 2. Diagrama de Arquitectura
+
+## 3. Objetivos
+
+* **Acceso Universal:** Controlar dispositivos IoT desde cualquier navegador web.
+* **Seguridad:** Proteger el acceso al panel mediante credenciales (usuario/contraseña).
+* **Tiempo Real:** Visualizar el estado actual y consumo de los dispositivos mediante sondeo periódico (polling).
+* **Escalabilidad:** Mantener una arquitectura modular que permita añadir nuevos dispositivos fácilmente.
+
+## 4. Requisitos Funcionales
+
+### A. Gestión de Dispositivos
+
+* **Termostato:** Monitoreo de estado, temperatura ambiente y temperatura objetivo.
+* **Consumo General:** Visualización de potencia (W) y voltaje (V).
+* **Piscina (Agua y Reloj):** Control de encendido/apagado (toggle) de los interruptores de control.
+
+### B. Interfaz de Usuario (Frontend)
+
+* **Diseño:** Responsive (adaptable a móvil y escritorio).
+* **Interacción:** Actualización asíncrona de datos sin recargar la página (Fetch API).
+* **Visualización:** Tarjetas informativas con indicadores visuales claros.
+
+### C. Backend
+
+* **API Endpoints:**
+* `GET /`: Servidor del dashboard principal.
+* `GET /api/data`: Obtención de datos actualizados de todos los sensores.
+* `POST /api/toggle`: Cambio de estado (ON/OFF) de dispositivos.
+
+
+
+## 5. Especificaciones Técnicas
+
+| Componente | Tecnología / Servicio |
+| --- | --- |
+| **Lenguaje Backend** | Python 3.12 |
+| **Framework Web** | Flask |
+| **Integración Cloud** | `tinytuya` (Tuya Cloud API) |
+| **Seguridad** | `flask-basicauth` |
+| **Hosting** | PythonAnywhere |
+| **Frontend** | HTML5, CSS3 (Grid Layout), Vanilla JS |
+
+## 6. Configuración de Seguridad
+
+* **Autenticación:** Implementada vía `Basic Auth` en el lado del servidor.
+* **Control de Acceso:** La IP del servidor (`3.95.61.192`) debe estar autorizada en la "IP White List" de la consola de Tuya IoT.
+* **Variables de Entorno:**
+* `BASIC_AUTH_USER`: Usuario de acceso.
+* `BASIC_AUTH_PASS`: Contraseña de acceso.
+* `TUYA_API_KEY`: Clave de proyecto.
+* `TUYA_API_SECRET`: Secreto de proyecto.
+
+
+
+## 7. Mantenimiento y Evolución (Roadmap)
+
+### Fase 1: MVP (Estado actual - Completado)
+
+* Control funcional y visualización básica.
+* Seguridad implementada.
+
+### Fase 2: Mejoras sugeridas (Futuro)
+
+* **Históricos:** Guardar datos de consumo en una base de datos (SQLite) para generar gráficas.
+* **Notificaciones:** Envío de alertas si la temperatura o el consumo exceden ciertos límites.
+* **Optimización:** Migrar de *polling* (setInterval 5s) a *WebSockets* para mayor ahorro de energía y menor latencia.
+
+---
+
+### ¿Cómo mantener este PRD?
+
+Guarda este archivo en tu carpeta local. Cada vez que añadas una nueva funcionalidad (por ejemplo, si compras un nuevo enchufe inteligente), actualiza la sección **"4.A Gestión de Dispositivos"** y añade el nuevo ID en el código de `servidor.py`.
+
+¿Quieres que añada alguna sección extra, como un manual de "Cómo desplegar desde cero" por si necesitas reinstalarlo?

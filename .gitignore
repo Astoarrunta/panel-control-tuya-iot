@@ -1,0 +1,15 @@
+# Credenciales y variables de entorno (NUNCA subir al repositorio)
+.env
+tinytuya.json
+
+# Archivos de Python compilados
+__pycache__/
+*.pyc
+*.pyo
+
+# Archivos de diagnóstico temporales
+test_*.py
+
+# Archivos grandes de inventario de dispositivos
+tuya-raw.json
+devices.json

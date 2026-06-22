@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Centro de Control Domótico</title>
+    <!-- Enlace a estilos CSS e importación de fuentes desde el servidor -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="landing-wrapper">
+        <div class="landing-card">
+            <h1 class="landing-title">Centro de Control Domótico</h1>
+            <p class="landing-subtitle">Selecciona el entorno de acceso para gestionar tus dispositivos inteligentes Tuya</p>
+            
+            <div class="landing-options">
+                <!-- Acceso al servidor local -->
+                <a href="/control" class="landing-option-btn local-btn">
+                    <span style="font-size: 2.5rem;">🏠</span>
+                    <h2>Acceso Local</h2>
+                    <p>Gestionar dispositivos desde la red Wi-Fi de casa.</p>
+                </a>
+                
+                <!-- Acceso al servidor en la nube -->
+                <a href="https://cristajon.pythonanywhere.com/control" class="landing-option-btn cloud-btn" target="_blank" rel="noopener noreferrer">
+                    <span style="font-size: 2.5rem;">☁️</span>
+                    <h2>Acceso Cloud</h2>
+                    <p>Acceder de forma segura desde fuera de casa (PythonAnywhere).</p>
+                </a>
+            </div>
+            
+            <!-- Botón para finalizar la ejecución del script servidor en local -->
+            <button onclick="apagarServidorLocal()" class="shutdown-btn">🛑 Apagar Servidor Local</button>
+        </div>
+    </div>
+
+    <script>
+        // Función asíncrona para solicitar el apagado del servidor local
+        async function apagarServidorLocal() {
+            if (confirm("¿Estás seguro de que deseas detener el servidor local? Las conexiones locales y la interfaz web dejarán de responder.")) {
+                try {
+                    // Enviar petición POST al endpoint de apagado
+                    await fetch('/api/shutdown', { method: 'POST' });
+                } catch (e) {
+                    // Si falla el fetch por caída de conexión del servidor, mostramos el mensaje de apagado exitoso
+                    document.body.innerHTML = `
+                        <div class="landing-wrapper">
+                            <div class="landing-card" style="text-align: center;">
+                                <span style="font-size: 4rem;">🔌</span>
+                                <h1 class="landing-title" style="margin-top:20px;">Servidor Detenido</h1>
+                                <p class="landing-subtitle">El proceso del servidor local Flask ha finalizado correctamente. Ya puedes cerrar esta pestaña de forma segura.</p>
+                            </div>
+                        </div>
+                    `;
+                }
+            }
+        }
+    </script>
+</body>
+</html>

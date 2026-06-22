@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Control - Tuya Smart IoT</title>
+    <!-- Cargamos los estilos del dashboard -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <!-- Efecto glow de fondo -->
+    <div class="glow-bg"></div>
+    
+    <div class="app-container">
+        <!-- Encabezado con información del modo de ejecución -->
+        <header>
+            <div>
+                <h1>Panel de Control</h1>
+                <p style="color: var(--text-secondary); font-size: 0.95rem; margin-top: 5px;">Gestión de dispositivos inteligentes en tiempo real</p>
+            </div>
+            <div class="badge-container">
+                <span class="mode-badge {{ mode }}">{{ mode_label }}</span>
+            </div>
+        </header>
+
+        <!-- Grid Simétrico de Tarjetas (Kambas Layout) -->
+        <main class="grid-container">
+            
+            <!-- Tarjeta 1: Termostato -->
+            <div class="card" id="card-thermostat">
+                <div class="card-header">
+                    <span class="card-title">
+                        <span class="card-icon" id="t-icon">🌡️</span> Termostato Salón
+                    </span>
+                    <span class="status-text off" id="t-status">...</span>
+                </div>
+                <div class="card-body">
+                    <div class="data-row">
+                        <span class="data-label">Temperatura Ambiente</span>
+                        <span class="data-value" id="t-current">... °C</span>
+                    </div>
+                    <div class="data-row">
+                        <span class="data-label">Temperatura Objetivo</span>
+                        <span class="data-value" id="t-target">... °C</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tarjeta 2: Consumo General -->
+            <div class="card" id="card-power">
+                <div class="card-header">
+                    <span class="card-title">
+                        <span class="card-icon">⚡</span> Consumo General
+                    </span>
+                </div>
+                <div class="card-body">
+                    <div class="data-row">
+                        <span class="data-label">Potencia Activa</span>
+                        <span class="data-value" id="pow">... W</span>
+                    </div>
+                    <div class="data-row">
+                        <span class="data-label">Tensión de Red</span>
+                        <span class="data-value" id="vol">... V</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tarjeta 3: Agua Piscina -->
+            <div class="card card-clickable" id="card-agua">
+                <div class="card-header">
+                    <span class="card-title">
+                        <span class="card-icon">💧</span> Agua Piscina
+                    </span>
+                    <span class="status-text off" id="ap-status-txt">...</span>
+                </div>
+                <div class="card-body">
+                    <p style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.4;">
+                        Control directo del motor de llenado y circulación de agua de la piscina.
+                    </p>
+                    <div class="switch-container">
+                        <span class="data-label">Encendido / Apagado</span>
+                        <label class="switch">
+                            <input type="checkbox" id="ap-switch" onchange="toggleDevice('{{ id_agua }}', 'ap-switch', 'ap-status-txt')">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tarjeta 4: Reloj Piscina -->
+            <div class="card card-clickable" id="card-reloj">
+                <div class="card-header">
+                    <span class="card-title">
+                        <span class="card-icon">⏱️</span> Reloj Piscina
+                    </span>
+                    <span class="status-text off" id="rp-status-txt">...</span>
+                </div>
+                <div class="card-body">
+                    <p style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.4;">
+                        Temporizador automático y programador eléctrico del sistema de filtrado.
+                    </p>
+                    <div class="switch-container">
+                        <span class="data-label">Encendido / Apagado</span>
+                        <label class="switch">
+                            <input type="checkbox" id="rp-switch" onchange="toggleDevice('{{ id_reloj }}', 'rp-switch', 'rp-status-txt')">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tarjeta 5: Aire Acondicionado Cris -->
+            <div class="card" id="card-aire">
+                <div class="card-header">
+                    <span class="card-title">
+                        <span class="card-icon" id="ac-icon">❄️</span> Aire Cris
+                    </span>
+                    <span class="status-text off" id="ac-status-txt">...</span>
+                </div>
+                <div class="card-body">
+                    <!-- Controles específicos del AC (Se deshabilitan si está apagado) -->
+                    <div id="ac-controls-wrapper" class="disabled-controls">
+                        <!-- Control de Temperatura (+/-) -->
+                        <div class="data-row" style="margin-bottom: 12px; height: 32px;">
+                            <span class="data-label">Temperatura</span>
+                            <div class="temp-control-container">
+                                <button class="temp-btn" onclick="adjustAcTemp('{{ id_aire }}', -1)">-</button>
+                                <span class="data-value" id="ac-temp-val" style="min-width: 24px; text-align: center;">24</span><span class="data-value">°C</span>
+                                <button class="temp-btn" onclick="adjustAcTemp('{{ id_aire }}', 1)">+</button>
+                            </div>
+                        </div>
+
+                        <!-- Selector de Modo de Operación -->
+                        <div class="data-row" style="margin-bottom: 12px;">
+                            <span class="data-label">Modo</span>
+                            <select class="custom-select" id="ac-mode" onchange="sendAcCommand('{{ id_aire }}', 'mode', this.value)">
+                                <option value="0">Auto</option>
+                                <option value="1">Frío</option>
+                                <option value="2">Seco</option>
+                                <option value="3">Ventilador</option>
+                                <option value="4">Calor</option>
+                            </select>
+                        </div>
+
+                        <!-- Selector de Velocidad del Ventilador (Wind) -->
+                        <div class="data-row" style="margin-bottom: 12px;">
+                            <span class="data-label">Velocidad</span>
+                            <select class="custom-select" id="ac-wind" onchange="sendAcCommand('{{ id_aire }}', 'wind', this.value)">
+                                <option value="0">Auto</option>
+                                <option value="1">Bajo</option>
+                                <option value="2">Medio</option>
+                                <option value="3">Alto</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Control de encendido (Power) al final -->
+                    <div class="switch-container">
+                        <span class="data-label">Encendido / Apagado</span>
+                        <label class="switch">
+                            <input type="checkbox" id="ac-switch" onchange="toggleAcPower('{{ id_aire }}')">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+
+        <!-- Botón Volver a Inicio -->
+        <div style="text-align: center; margin-top: 10px;">
+            <a href="/" class="shutdown-btn" style="text-decoration: none; display: inline-block;">🏠 Volver al Inicio</a>
+        </div>
+
+        <!-- Pie de página -->
+        <footer>
+            <p>© 2026 Sistema Domótico - Entorno: {{ mode_label }}</p>
+        </footer>
+    </div>
+
+    <!-- Script de control asíncrono y telemetría -->
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <script>
+        // Efecto interactivo de iluminación al mover el ratón por las tarjetas
+        document.querySelectorAll('.card').forEach(card => {
+            card.addEventListener('mousemove', e => {
+                const rect = card.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                card.style.setProperty('--x', `${x}px`);
+                card.style.setProperty('--y', `${y}px`);
+            });
+        });
+    </script>
+</body>
+</html>

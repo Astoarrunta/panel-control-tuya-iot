@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel Control Tuya</title>
+    <link rel="stylesheet" href="/static/style.css"></head>
+<body>
+    <h1>Panel de Control</h1>
+    <div class="dashboard">
+        <div class="card" id="card-thermostat">
+            <h2>🌡️ Termostato Salón</h2>
+            <div class="row"><span class="label">Estado</span><span class="value" id="t-status">...</span></div>
+            <div class="row"><span class="label">Temp. Ambiente</span><span class="value" id="t-current">... °C</span></div>
+            <div class="row"><span class="label">Temp. Objetivo</span><span class="value" id="t-target">... °C</span></div>
+        </div>
+        <div class="card" id="card-power">
+            <h2>⚡ Consumo General</h2>
+            <div class="row"><span class="label">Potencia</span><span class="value" id="pow">... W</span></div>
+            <div class="row"><span class="label">Voltaje</span><span class="value" id="vol">... V</span></div>
+        </div>
+        <div class="card">
+            <h2>💧 Agua Piscina</h2>
+            <div class="row"><span class="label">Estado</span><span class="value" id="ap-state">...</span></div>
+        </div>
+        <div class="card">
+            <h2>⏱️ Reloj Piscina</h2>
+            <div class="row"><span class="label">Estado</span><span class="value" id="rp-state">...</span></div>
+        </div>
+    </div>
+	<footer>
+        <p>© 2026 Sistema Domótico - Pagina web local</p>
+    </footer>
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>

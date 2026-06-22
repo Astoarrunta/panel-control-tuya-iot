@@ -1,0 +1,53 @@
+:root { 
+    --primary: #007BFF; 
+    --bg: #0f172a; 
+    --card: rgba(255, 255, 255, 0.05); 
+}
+
+body { 
+    font-family: 'Segoe UI', sans-serif; 
+    background-color: var(--bg); 
+    color: #f8fafc; 
+    margin: 0; 
+    padding: 20px; 
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+h1 { text-align: center; margin-bottom: 30px; }
+
+.dashboard { 
+    display: grid; 
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); 
+    gap: 20px; 
+    max-width: 1200px; 
+    margin: 0 auto; 
+    flex: 1; /* Esto empuja el footer hacia abajo */
+}
+
+.card { 
+    background: var(--card); 
+    backdrop-filter: blur(10px); 
+    padding: 25px; 
+    border-radius: 20px; 
+    border: 1px solid rgba(255, 255, 255, 0.1); 
+}
+
+.row { display: flex; justify-content: space-between; margin: 15px 0; }
+.value { font-weight: bold; font-size: 1.2rem; }
+
+/* Estilo del Footer */
+footer {
+    text-align: center;
+    padding: 40px;
+    margin-top: 50px;
+    color: #888;
+    font-size: 0.9rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Clases de Alerta */
+.alert-red { border: 2px solid #ef4444 !important; }
+.alert-orange { color: #f97316 !important; }
+.alert-blue { color: #38bdf8 !important; }

@@ -511,3 +511,16 @@ footer {
     filter: grayscale(100%);
     transition: all 0.3s ease;
 }
+
+/* Etiqueta de versión en el header */
+.version-badge {
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: var(--text-secondary);
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}

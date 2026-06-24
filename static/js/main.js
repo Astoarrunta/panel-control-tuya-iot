@@ -45,6 +45,14 @@ async function toggleDevice(deviceId, switchId, textId) {
     const switchEl = document.getElementById(switchId);
     const newState = switchEl.checked;
     
+    // Si se está intentando encender el agua de la piscina, pedir confirmación para evitar accidentes
+    if (switchId === 'ap-switch' && newState === true) {
+        if (!confirm("¿Estás seguro de que deseas encender el motor de Agua de la Piscina?")) {
+            switchEl.checked = false; // Revertimos visualmente el estado del switch
+            return; // Abortamos la petición a la API
+        }
+    }
+    
     // ActualizarUI inmediatamente para dar sensación de reactividad
     updateStatusUI(textId, switchId, newState);
     
@@ -229,6 +237,25 @@ async function adjustAcTemp(deviceId, step) {
     } catch (e) {
         alert("Error de comunicación");
         tempValEl.innerText = currentTemp;
+    }
+}
+
+// Activar botones personalizados del Aire (Mando DIY)
+async function triggerAireCustom(keyIndex) {
+    try {
+        const response = await fetch('/api/trigger_aire_custom', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ key: keyIndex })
+        });
+        const res = await response.json();
+        if (res.status === 'success') {
+            alert("Comando enviado con éxito.");
+        } else {
+            alert("Hubo un error al enviar el comando: " + (res.message || res.msg || "Desconocido"));
+        }
+    } catch (e) {
+        alert("Error de comunicación con el servidor local");
     }
 }
 

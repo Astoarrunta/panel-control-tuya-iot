@@ -154,11 +154,8 @@ def send_command():
         code = data['code']
         value = data['value']
         
-        # El Smart IR es el dispositivo padre: bfb88b2cabd1a639995kgy
         infrared_id = "bfb88b2cabd1a639995kgy"
         
-        # Normalizar tipos de datos para infrarrojos de Tuya AC
-        # power debe ser 1 o 0 (integer)
         if code == 'power':
             value = 1 if bool(value) else 0
         else:
@@ -170,7 +167,6 @@ def send_command():
             "value": value
         }
         
-        # Enviar petición a la API de Infrarrojos de Tuya Cloud
         res = cloud.cloudrequest(path, action="POST", post=payload)
         
         if isinstance(res, dict) and res.get('success', False):
@@ -178,6 +174,33 @@ def send_command():
         else:
             error_msg = res.get('msg', 'Error desconocido') if isinstance(res, dict) else 'Respuesta no válida'
             return jsonify({"status": "error", "message": error_msg})
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)})
+
+@app.route('/api/trigger_aire_custom', methods=['POST'])
+@basic_auth.required
+def trigger_aire_custom():
+    data = request.json
+    key_id = data.get('key', '1')
+    try:
+        remote_id = "bfa3ae255f54aa56abxm6g" # Dispositivo DIY con botones extra
+        infrared_id = "bfb88b2cabd1a639995kgy"
+        
+        # Enviar el comando al botón aprendido (1, 2, etc.)
+        path = f"/v1.0/infrareds/{infrared_id}/remotes/{remote_id}/command"
+        payload = {"key": str(key_id)}
+        
+        res = cloud.cloudrequest(path, action="POST", post=payload)
+        
+        # Como fallback por si el usuario lo creó como dispositivo estándar en lugar de DIY Custom
+        if isinstance(res, dict) and not res.get('success', False):
+            # Intentar API v2 para comandos
+            path_v2 = f"/v2.0/infrareds/{infrared_id}/remotes/{remote_id}/command"
+            # Asumimos que key 1 podría ser power, y key 2 algo más
+            code = "power" if key_id == '1' else f"key_{key_id}"
+            res = cloud.cloudrequest(path_v2, action="POST", post={"code": code, "value": 1})
+
+        return jsonify({"status": "success", "result": res})
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)})
 

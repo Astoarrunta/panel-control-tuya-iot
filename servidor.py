@@ -73,22 +73,28 @@ FLUIDRA_PASSWORD = os.getenv('FLUIDRA_PASSWORD')
 FLUIDRA_DEVICE_ID = os.getenv('FLUIDRA_DEVICE_ID', 'LG25363958')
 
 _fluidra_client = None
+_fluidra_init_error = None
 _fluidra_cache = {"data": None, "timestamp": 0}
 
 def get_fluidra_client():
     """Inicializa de forma perezosa el cliente de Fluidra."""
-    global _fluidra_client
+    global _fluidra_client, _fluidra_init_error
     if _fluidra_client is None:
         if FluidraClient is None:
+            _fluidra_init_error = "Librería fluidra_client o boto3 no importada en el servidor"
             return None
-        if FLUIDRA_USERNAME and FLUIDRA_PASSWORD:
-            try:
-                _fluidra_client = FluidraClient(FLUIDRA_USERNAME, FLUIDRA_PASSWORD)
-                _fluidra_client.login()
-                print("[OK] Fluidra Client inicializado correctamente")
-            except Exception as e:
-                print(f"[ERROR] Fallo al iniciar Fluidra Client: {e}")
-                _fluidra_client = None
+        if not FLUIDRA_USERNAME or not FLUIDRA_PASSWORD:
+            _fluidra_init_error = "Variables de entorno FLUIDRA_USERNAME o FLUIDRA_PASSWORD no encontradas en el .env"
+            return None
+        try:
+            _fluidra_client = FluidraClient(FLUIDRA_USERNAME, FLUIDRA_PASSWORD)
+            _fluidra_client.login()
+            _fluidra_init_error = None
+            print("[OK] Fluidra Client inicializado correctamente")
+        except Exception as e:
+            _fluidra_init_error = f"Error al conectar/autenticar con Fluidra: {str(e)}"
+            print(f"[ERROR] Fallo al iniciar Fluidra Client: {e}")
+            _fluidra_client = None
     return _fluidra_client
 
 def get_fluidra_data():
@@ -100,7 +106,7 @@ def get_fluidra_data():
         
     client = get_fluidra_client()
     if not client:
-        return {"error": "Fluidra no configurado"}
+        return {"error": _fluidra_init_error or "Fluidra no configurado"}
         
     try:
         components = client.get_device_components(FLUIDRA_DEVICE_ID)

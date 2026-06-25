@@ -3,6 +3,35 @@
  * Lógica asíncrona de telemetría y cambio de estados.
  */
 
+// Sistema de notificaciones tipo Toast (sin bloquear el navegador)
+function showToast(message, type = 'success') {
+    // Crear el contenedor de toasts si no existe
+    let container = document.getElementById('toast-container');
+    if (!container) {
+        container = document.createElement('div');
+        container.id = 'toast-container';
+        container.style.cssText = 'position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;flex-direction:column;gap:10px;';
+        document.body.appendChild(container);
+    }
+    
+    // Crear el toast individual
+    const toast = document.createElement('div');
+    const color = type === 'success' ? '#22c55e' : '#ef4444';
+    const icon  = type === 'success' ? '✓' : '✗';
+    toast.style.cssText = `background:rgba(15,15,25,0.95);border:1px solid ${color};color:#fff;padding:12px 18px;border-radius:10px;font-size:0.88rem;display:flex;align-items:center;gap:10px;box-shadow:0 4px 20px rgba(0,0,0,0.4);opacity:0;transition:opacity 0.3s ease;min-width:220px;`;
+    toast.innerHTML = `<span style="color:${color};font-weight:700;font-size:1rem;">${icon}</span><span>${message}</span>`;
+    container.appendChild(toast);
+    
+    // Animar entrada
+    requestAnimationFrame(() => { toast.style.opacity = '1'; });
+    
+    // Eliminar después de 3 segundos
+    setTimeout(() => {
+        toast.style.opacity = '0';
+        setTimeout(() => toast.remove(), 300);
+    }, 3000);
+}
+
 // Actualizar texto de estado de un switch
 function updateStatusUI(textId, switchId, isOn) {
     const textEl = document.getElementById(textId);
@@ -73,12 +102,12 @@ async function toggleDevice(deviceId, switchId, textId) {
         // Si el servidor reporta un error, revertir el estado del interruptor
         if (result.status !== 'success') {
             console.error("Fallo al cambiar estado en la nube de Tuya:", result.message);
-            alert("No se pudo conmutar el dispositivo: " + (result.message || "Error desconocido"));
+            showToast('No se pudo conmutar: ' + (result.message || 'Error desconocido'), 'error');
             updateStatusUI(textId, switchId, !newState);
         }
     } catch (error) {
         console.error("Error de comunicación con la API del servidor:", error);
-        alert("Error al comunicar con el servidor local. Revertiendo acción.");
+        showToast('Error de comunicación. Revertiendo acción.', 'error');
         updateStatusUI(textId, switchId, !newState);
     }
 }
@@ -181,13 +210,13 @@ async function toggleAcPower(deviceId) {
         });
         const res = await response.json();
         if (res.status !== 'success') {
-            alert("Error al conmutar alimentación del aire");
+            showToast('Error al conmutar el aire acondicionado', 'error');
             // Revertir UI si la nube rechaza el comando
             updateStatusUI('ac-status-txt', 'ac-switch', !newState);
             setAcControlsState(!newState);
         }
     } catch (e) {
-        alert("Error de comunicación");
+        showToast('Error de comunicación', 'error');
         updateStatusUI('ac-status-txt', 'ac-switch', !newState);
         setAcControlsState(!newState);
     }
@@ -203,10 +232,10 @@ async function sendAcCommand(deviceId, code, value) {
         });
         const res = await response.json();
         if (res.status !== 'success') {
-            alert(`Error al cambiar el parámetro ${code}`);
+            showToast(`Error al cambiar ${code}`, 'error');
         }
     } catch (e) {
-        alert("Error de comunicación");
+        showToast('Error de comunicación', 'error');
     }
 }
 
@@ -231,17 +260,19 @@ async function adjustAcTemp(deviceId, step) {
         });
         const res = await response.json();
         if (res.status !== 'success') {
-            alert("Error al ajustar temperatura");
+            showToast('Error al ajustar temperatura', 'error');
             tempValEl.innerText = currentTemp; // Revertir en caso de fallo
         }
     } catch (e) {
-        alert("Error de comunicación");
+        showToast('Error de comunicación', 'error');
         tempValEl.innerText = currentTemp;
     }
 }
 
 // Activar botones personalizados del Aire (Mando DIY)
 async function triggerAireCustom(keyIndex) {
+    const labels = { '1': 'Modo Silencio', '2': 'Apagar LED' };
+    const label  = labels[keyIndex] || 'Comando';
     try {
         const response = await fetch('/api/trigger_aire_custom', {
             method: 'POST',
@@ -250,12 +281,13 @@ async function triggerAireCustom(keyIndex) {
         });
         const res = await response.json();
         if (res.status === 'success') {
-            alert("Comando enviado con éxito.");
+            // Notificación discreta: no bloquea el navegador
+            showToast(`${label} activado`);
         } else {
-            alert("Hubo un error al enviar el comando: " + (res.message || res.msg || "Desconocido"));
+            showToast(`Error en ${label}: ` + (res.message || 'Error desconocido'), 'error');
         }
     } catch (e) {
-        alert("Error de comunicación con el servidor local");
+        showToast('Error de comunicación con el servidor', 'error');
     }
 }
 

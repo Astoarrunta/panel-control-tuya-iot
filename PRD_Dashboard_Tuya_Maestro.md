@@ -17,6 +17,9 @@ Dashboard de telemetría y control para dispositivos Tuya, diseñado para centra
     - `ID_THERMOSTAT`: `4006843184cca88954c8`
     - `ID_AGUA_PISCINA`: `bff1999b63ffd12874bhan`
     - `ID_RELOJ_PISCINA`: `bf3b6906e261e6d994hgg8`
+    - `ID_SMART_IR` (Padre de mandos IR): `bfb88b2cabd1a639995kgy`
+    - `ID_AIRE_CRIS` (AC Inteligente Tuya): `bf8404d4e90f7cce02gzsq`
+    - `ID_AIRE_NOCHE` (Mando DIY copiado): `bfa3ae255f54aa56abxm6g`
 
 ## 4. Especificaciones del Sistema de Diseño (UI/UX)
 - **Estilo:** Dark Mode + Glassmorphism.
@@ -41,5 +44,20 @@ El núcleo del proyecto. Todo futuro agente debe respetar la estructura de rutas
 ## 6. Roadmap de Desarrollo
 1. **Fase de Refactorización:** Separar `HTML/CSS/JS` del `servidor.py`. Crear directorio `static/` y `templates/`.
 2. **Fase de Funcionalidad:** Implementar `POST` endpoints en `servidor.py` para controlar el estado de la piscina (ON/OFF).
-3. **Fase de Datos:** Implementar base de datos SQLite para persistencia y logs.
 4. **Fase de Estabilidad:** Implementar manejo de errores robusto en la conexión a la Cloud de Tuya.
+5. **Seguridad Integrada:** Añadida confirmación en Javascript para encendido de bomba de piscina (evita clics accidentales).
+
+## 7. Lecciones Técnicas y Resolución de Problemas (Troubleshooting)
+
+### A. Error "sign invalid" (Código 1004 / 911)
+Si Tuya rechaza las peticiones (ya sea en local o en PythonAnywhere) suele deberse a dos factores:
+- **Desincronización de Reloj:** Tuya requiere que la petición (`time.time()`) coincida con el servidor de internet con margen < 5 minutos.
+- **Renovación del Free Trial (Tuya IoT Platform):** Al extender la licencia de desarrollador gratuita, la plataforma **regenera automáticamente el "Access Secret"**. Es imperativo actualizar el archivo `.env` inmediatamente tras aprobarse la extensión.
+
+### B. Conflicto de caché (`tinytuya.json`)
+La librería `tinytuya` crea un caché local. En despliegues hacia PythonAnywhere:
+- `.env` y `tinytuya.json` están en `.gitignore` por seguridad.
+- Al cambiar el `TUYA_API_SECRET`, es fundamental **borrar el archivo `tinytuya.json` viejo en el servidor Cloud**, de lo contrario Python entrará en conflicto firmando con un token caducado e ignorando el `.env` actualizado.
+
+### C. Contexto WSGI en PythonAnywhere
+El despliegue con GitHub requiere verificar que el archivo de configuración WSGI (`/var/www/..._wsgi.py`) apunte a la subcarpeta del repositorio (`App_PanelControl_TuyaSmart_ioT/tuya smart/proyecto_V2.0/`) como `project_home`, y no a la raíz del usuario.

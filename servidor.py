@@ -182,25 +182,29 @@ def send_command():
 def trigger_aire_custom():
     data = request.json
     key_id = data.get('key', '1')
+    
+    # Mapa de botones del dashboard a escenas Tuya "Tap to Run"
+    # home_id: 25900318 (hogar Ruso en Tuya Smart)
+    HOME_ID = 25900318
+    SCENE_MAP = {
+        '1': {'id': 'waVuzAMkDJI2RKen', 'name': 'Modo Noche'},
+        # Añadir aquí el scene_id de "Apagar LED" cuando se cree por separado
+    }
+    
+    scene = SCENE_MAP.get(key_id)
+    if not scene:
+        return jsonify({"status": "error", "message": f"No hay escena configurada para el boton {key_id}"})
+    
     try:
-        remote_id = "bfa3ae255f54aa56abxm6g" # Dispositivo DIY con botones extra
-        infrared_id = "bfb88b2cabd1a639995kgy"
+        # Lanzar la escena "Tap to Run" via API v1.0 homes
+        path = f"/v1.0/homes/{HOME_ID}/scenes/{scene['id']}/trigger"
+        res = cloud.cloudrequest(path, action="POST")
         
-        # Enviar el comando al botón aprendido (1, 2, etc.)
-        path = f"/v1.0/infrareds/{infrared_id}/remotes/{remote_id}/command"
-        payload = {"key": str(key_id)}
-        
-        res = cloud.cloudrequest(path, action="POST", post=payload)
-        
-        # Como fallback por si el usuario lo creó como dispositivo estándar en lugar de DIY Custom
-        if isinstance(res, dict) and not res.get('success', False):
-            # Intentar API v2 para comandos
-            path_v2 = f"/v2.0/infrareds/{infrared_id}/remotes/{remote_id}/command"
-            # Asumimos que key 1 podría ser power, y key 2 algo más
-            code = "power" if key_id == '1' else f"key_{key_id}"
-            res = cloud.cloudrequest(path_v2, action="POST", post={"code": code, "value": 1})
-
-        return jsonify({"status": "success", "result": res})
+        if isinstance(res, dict) and res.get('success', False):
+            return jsonify({"status": "success", "scene": scene['name']})
+        else:
+            error_msg = res.get('msg', 'Error desconocido') if isinstance(res, dict) else 'Respuesta no valida'
+            return jsonify({"status": "error", "message": error_msg})
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)})
 

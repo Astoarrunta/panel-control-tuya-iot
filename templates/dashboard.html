@@ -92,7 +92,7 @@
             <div class="card card-clickable" id="card-reloj">
                 <div class="card-header">
                     <span class="card-title">
-                        <span class="card-icon">⏱️</span> Reloj Piscina
+                        <span class="card-icon">🏊‍♂️⚙️</span> Reloj Piscina
                     </span>
                     <span class="status-text off" id="rp-status-txt">...</span>
                 </div>
@@ -169,6 +169,75 @@
                         <span class="data-label">Encendido / Apagado</span>
                         <label class="switch">
                             <input type="checkbox" id="ac-switch" onchange="toggleAcPower('{{ id_aire }}')">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tarjeta 6: Bomba de Calor Fluidra Eco Elyo -->
+            <div class="card" id="card-ecoelyo">
+                <div class="card-header">
+                    <span class="card-title">
+                        <span class="card-icon" id="fluidra-icon">🏊‍♂️♨️</span> Bomba Calor piscina
+                    </span>
+                    <span class="status-text off" id="fluidra-status-txt">...</span>
+                </div>
+                <div class="card-body">
+                    <!-- Banner de alarma/error activo -->
+                    <div id="fluidra-alarm-banner" style="display: none; background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.3); padding: 10px 14px; border-radius: 12px; font-size: 0.82rem; color: #f87171; margin-bottom: 12px; align-items: center; gap: 8px;">
+                        <span>⚠️</span>
+                        <span id="fluidra-alarm-msg">Error</span>
+                    </div>
+
+                    <!-- Controles específicos de la bomba de calor (Se deshabilitan si está apagada) -->
+                    <div id="fluidra-controls-wrapper" class="disabled-controls">
+                        <!-- Lecturas de Temperatura -->
+                        <div class="data-row" style="margin-bottom: 8px;">
+                            <span class="data-label">Temperatura Agua</span>
+                            <span class="data-value" id="fluidra-water-temp">... °C</span>
+                        </div>
+                        <div class="data-row" style="margin-bottom: 8px;">
+                            <span class="data-label">Temperatura Aire</span>
+                            <span class="data-value" id="fluidra-air-temp">... °C</span>
+                        </div>
+
+                        <!-- Control de Temperatura Objetivo (+/-) -->
+                        <div class="data-row" style="margin-bottom: 12px; height: 32px;">
+                            <span class="data-label">Temp. Objetivo</span>
+                            <div class="temp-control-container">
+                                <button class="temp-btn" onclick="adjustFluidraTemp(-0.5)">-</button>
+                                <span class="data-value" id="fluidra-temp-val" style="min-width: 32px; text-align: center;">...</span><span class="data-value">°C</span>
+                                <button class="temp-btn" onclick="adjustFluidraTemp(0.5)">+</button>
+                            </div>
+                        </div>
+
+                        <!-- Selector de Modo de Operación -->
+                        <div class="data-row" style="margin-bottom: 12px;">
+                            <span class="data-label">Modo</span>
+                            <select class="custom-select" id="fluidra-mode" onchange="sendFluidraCommand('mode', this.value)">
+                                <option value="2">Smart Auto</option>
+                                <option value="0">Smart Calor</option>
+                                <option value="3">Boost Calor</option>
+                                <option value="4">Silence Calor</option>
+                                <option value="1">Smart Frío</option>
+                                <option value="5">Boost Frío</option>
+                                <option value="6">Silence Frío</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Datos de telemetría adicionales -->
+                    <div class="data-row" style="margin-top: 5px; font-size: 0.8rem; color: var(--text-secondary);">
+                        <span>Uso: <strong id="fluidra-hours" style="color: var(--text-primary);">...</strong> h</span>
+                        <span>Nube: <strong id="fluidra-cloud" style="color: var(--text-primary);">...</strong></span>
+                    </div>
+
+                    <!-- Control de encendido (Power) al final -->
+                    <div class="switch-container">
+                        <span class="data-label">Encendido / Apagado</span>
+                        <label class="switch">
+                            <input type="checkbox" id="fluidra-switch" onchange="toggleFluidraPower()">
                             <span class="slider"></span>
                         </label>
                     </div>

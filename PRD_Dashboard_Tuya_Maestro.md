@@ -12,14 +12,16 @@ Dashboard de telemetría y control para dispositivos Tuya, diseñado para centra
 ## 3. Configuración y Credenciales (Deuda Técnica)
 - **Estado:** Credenciales hardcodeadas en `servidor.py`.
 - **Plan de Mejora:** Migración inminente a variables de entorno (.env) para asegurar el repositorio.
-- **IDs de Dispositivos (Hardcoded):**
+- **IDs de Dispositivos e Integración:**
     - `ID_CONSUMO_GENERAL`: `bf4ef15c37bf6c53e8dbwc`
     - `ID_THERMOSTAT`: `4006843184cca88954c8`
     - `ID_AGUA_PISCINA`: `bff1999b63ffd12874bhan`
     - `ID_RELOJ_PISCINA`: `bf3b6906e261e6d994hgg8`
     - `ID_SMART_IR` (Padre de mandos IR): `bfb88b2cabd1a639995kgy`
     - `ID_AIRE_CRIS` (AC Inteligente Tuya): `bf8404d4e90f7cce02gzsq`
-    - `ID_AIRE_NOCHE` (Mando DIY copiado): `bfa3ae255f54aa56abxm6g`
+    - `ID_AIRE_NOCHE` (AC Remoto Noche): `bfa3ae255f54aa56abxm6g`
+    - `ID_AIRE_NOCHE_DIY` (Mando DIY personalizado): `bf1d9e9f76602817d7ra0h`
+    - `HOME_ID` (Hogar Ruso en Tuya Smart): `25900318`
 
 ## 4. Especificaciones del Sistema de Diseño (UI/UX)
 - **Estilo:** Dark Mode + Glassmorphism.
@@ -60,4 +62,10 @@ La librería `tinytuya` crea un caché local. En despliegues hacia PythonAnywher
 - Al cambiar el `TUYA_API_SECRET`, es fundamental **borrar el archivo `tinytuya.json` viejo en el servidor Cloud**, de lo contrario Python entrará en conflicto firmando con un token caducado e ignorando el `.env` actualizado.
 
 ### C. Contexto WSGI en PythonAnywhere
-El despliegue con GitHub requiere verificar que el archivo de configuración WSGI (`/var/www/..._wsgi.py`) apunte a la subcarpeta del repositorio (`App_PanelControl_TuyaSmart_ioT/tuya smart/proyecto_V2.0/`) como `project_home`, y no a la raíz del usuario.
+El despliegue con GitHub requiere verificar que el archivo de configuración WSGI (`/var/www/..._wsgi.py`) apunte al directorio del repositorio (`App_PanelControl_TuyaSmart_ioT/`) como `project_home`, y no a la raíz del usuario.
+
+### D. Comandos IR de Mandos DIY (Aprendidos) en Cuenta Gratuita
+Al intentar enviar un comando IR de aprendizaje personalizado (como "Modo Silencio" o "Apagar LED" del Aire Acondicionado) usando la API directa de Tuya (como `/v2.0/infrareds/.../remotes/.../command`), el servidor devolverá errores del tipo `No permissions` o `uri path invalid` debido a restricciones de nivel de cuenta de desarrollador sobre mandos no estandarizados.
+- **Solución estándar:** En su lugar, se deben crear escenas manuales (Tap-to-Run) en la aplicación móvil Tuya Smart que ejecuten dichos botones IR. Posteriormente se activa la API **Smart Home Scene Linkage** y se disparan desde el backend local o cloud llamando al endpoint:
+  `POST /v1.0/homes/{home_id}/scenes/{scene_id}/trigger`
+

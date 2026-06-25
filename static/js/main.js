@@ -187,6 +187,54 @@ async function updateTelemetry() {
             // Activar o sombrear los controles según el estado de encendido
             setAcControlsState(isAireOn);
         }
+
+        // --- 6. Sincronización de Bomba de Calor Fluidra (Eco Elyo) ---
+        if (data.fluidra) {
+            const f = data.fluidra;
+            if (f.error) {
+                console.error("Error de Fluidra:", f.error);
+                document.getElementById('fluidra-status-txt').innerText = "ERROR";
+                document.getElementById('fluidra-status-txt').className = "status-text off";
+            } else {
+                const isFluidraOn = f.power;
+                updateStatusUI('fluidra-status-txt', 'fluidra-switch', isFluidraOn);
+                
+                // Mostrar temperaturas
+                document.getElementById('fluidra-water-temp').innerText = f.water_temp.toFixed(1) + " °C";
+                document.getElementById('fluidra-air-temp').innerText = f.air_temp.toFixed(1) + " °C";
+                document.getElementById('fluidra-temp-val').innerText = f.target_temp.toFixed(1);
+                
+                // Modo
+                document.getElementById('fluidra-mode').value = f.mode;
+                
+                // Info extra
+                document.getElementById('fluidra-hours').innerText = f.running_hours;
+                document.getElementById('fluidra-cloud').innerText = f.connected ? "CONECTADO" : "DESCONECTADO";
+                document.getElementById('fluidra-cloud').style.color = f.connected ? "var(--success)" : "var(--danger)";
+                
+                // Banner de Alarma
+                const alarmBanner = document.getElementById('fluidra-alarm-banner');
+                const alarmMsg = document.getElementById('fluidra-alarm-msg');
+                if (alarmBanner && alarmMsg) {
+                    if (f.alarm_status === 'error' && f.error_code) {
+                        alarmBanner.style.display = 'flex';
+                        alarmMsg.innerText = `Alerta: ${f.error_code} - ${f.error_message || 'Falta de flujo'}`;
+                    } else {
+                        alarmBanner.style.display = 'none';
+                    }
+                }
+
+                // Control habilitado/deshabilitado
+                const wrapper = document.getElementById('fluidra-controls-wrapper');
+                if (wrapper) {
+                    if (isFluidraOn) {
+                        wrapper.classList.remove('disabled-controls');
+                    } else {
+                        wrapper.classList.add('disabled-controls');
+                    }
+                }
+            }
+        }
         
     } catch (error) {
         console.error("Error al actualizar la telemetría del panel:", error);
@@ -289,6 +337,35 @@ async function triggerAireCustom(keyIndex) {
     } catch (e) {
         showToast('Error de comunicación con el servidor', 'error');
     }
+}
+
+// Activar o desactivar visualmente la bomba de calor Fluidra
+function setFluidraControlsState(isOn) {
+    const wrapper = document.getElementById('fluidra-controls-wrapper');
+    if (!wrapper) return;
+    if (isOn) {
+        wrapper.classList.remove('disabled-controls');
+    } else {
+        wrapper.classList.add('disabled-controls');
+    }
+}
+
+// Acción de cambiar el estado (ON/OFF) de la bomba Fluidra (Desactivado temporalmente)
+async function toggleFluidraPower() {
+    const switchEl = document.getElementById('fluidra-switch');
+    // Revertir el estado visual inmediatamente ya que está en modo lectura
+    switchEl.checked = !switchEl.checked;
+    showToast("Modo lectura activo. Comandos desactivados temporalmente.", "warning");
+}
+
+// Enviar comandos de modo (Desactivado temporalmente)
+async function sendFluidraCommand(action, value) {
+    showToast("Modo lectura activo. Comandos desactivados temporalmente.", "warning");
+}
+
+// Ajustar temperatura objetivo (Desactivado temporalmente)
+async function adjustFluidraTemp(step) {
+    showToast("Modo lectura activo. Comandos desactivados temporalmente.", "warning");
 }
 
 // Iniciar consulta de telemetría y programar intervalo cada 5 segundos

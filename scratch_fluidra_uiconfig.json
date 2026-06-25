@@ -1,0 +1,410 @@
+{
+  "id": "iaq",
+  "name": "iAqualink+",
+  "minVersion": "0.0.1",
+  "configuration": {
+    "commandAndControl": {
+      "type": "iaqFullScreen",
+      "properties": {
+        "uiComponent": {
+          "type": "gaugeModeUI",
+          "properties": {
+            "requiredComponents": [
+              13
+            ],
+            "onOff": {
+              "type": "selector",
+              "properties": {
+                "componentRead": {
+                  "type": "number",
+                  "readId": 13
+                },
+                "componentStates": [
+                  {
+                    "label": {
+                      "icon": {
+                        "id": "devices.onOff.ON"
+                      },
+                      "default": "ON"
+                    },
+                    "componentReadValue": 1,
+                    "componentWrite": {
+                      "value": 1,
+                      "writeId": 13,
+                      "type": "number"
+                    }
+                  },
+                  {
+                    "label": {
+                      "icon": {
+                        "id": "devices.onOff.OFF"
+                      },
+                      "default": "OFF"
+                    },
+                    "componentReadValue": 0,
+                    "componentWrite": {
+                      "value": 0,
+                      "writeId": 13,
+                      "type": "number"
+                    }
+                  }
+                ]
+              }
+            },
+            "gaugeContainer": {
+              "type": "gaugeContainer",
+              "properties": {
+                "hide": {
+                  "type": "component",
+                  "componentRead": {
+                    "type": "number",
+                    "readId": 17
+                  },
+                  "componentValue": 7
+                },
+                "labels": {
+                  "top": {
+                    "type": "label",
+                    "properties": {
+                      "defaultValue": {
+                        "default": ""
+                      },
+                      "componentRead": {
+                        "readId": 28,
+                        "type": "number"
+                      },
+                      "componentStates": [
+                        {
+                          "label": {
+                            "default": "No Flow",
+                            "i18n": {
+                              "key": "hpc_no_flow_label"
+                            },
+                            "icon": {
+                              "id": "assets/images/equipment/hpc/ic_no_flow.png",
+                              "onTap": {
+                                "action": "showPopup",
+                                "data": {
+                                  "default": "The filtration pump is not on. Wait or activate it to allow the heat pump to work.",
+                                  "i18n": {
+                                    "key": "hpc_no_flow_explanation"
+                                  }
+                                }
+                              }
+                            },
+                            "color": "warning"
+                          },
+                          "componentReadValue": 1
+                        }
+                      ]
+                    }
+                  },
+                  "center": {
+                    "type": "label",
+                    "properties": {
+                      "default": {
+                        "default": "--.-"
+                      },
+                      "units": "°",
+                      "componentRead": {
+                        "readId": 15,
+                        "decimals": 0,
+                        "type": "number",
+                        "factor": 0.1
+                      }
+                    }
+                  },
+                  "bottom": {
+                    "type": "label",
+                    "properties": {
+                      "title": {
+                        "default": "Pool",
+                        "i18n": {
+                          "key": "hpc_gauge_pool_temperature_label"
+                        }
+                      },
+                      "default": {
+                        "default": "--.-"
+                      },
+                      "units": "°",
+                      "componentRead": {
+                        "readId": 19,
+                        "decimals": 0,
+                        "type": "number",
+                        "factor": 0.1
+                      }
+                    }
+                  }
+                },
+                "slider": {
+                  "type": "slider",
+                  "properties": {
+                    "min": {
+                      "type": "component",
+                      "value": 81
+                    },
+                    "max": {
+                      "type": "component",
+                      "value": 82
+                    },
+                    "value": {
+                      "componentRead": {
+                        "readId": 19,
+                        "decimals": 0,
+                        "type": "number",
+                        "factor": 0.1
+                      },
+                      "default": {
+                        "default": 15
+                      },
+                      "units": "°",
+                      "min": 7,
+                      "max": 40
+                    },
+                    "setpoint": {
+                      "default": {
+                        "default": 15
+                      },
+                      "componentRead": {
+                        "readId": 15,
+                        "decimals": 0,
+                        "type": "number",
+                        "factor": 0.1
+                      },
+                      "componentWrite": {
+                        "writeId": 15,
+                        "decimals": 1,
+                        "type": "number",
+                        "factor": 0.1
+                      },
+                      "units": "°",
+                      "steps": 1
+                    }
+                  }
+                }
+              }
+            },
+            "bottomRightLabel": {
+              "type": "label",
+              "properties": {
+                "title": {
+                  "default": "Pool",
+                  "i18n": {
+                    "key": "hpc_gauge_air_temperature_label"
+                  }
+                },
+                "default": {
+                  "default": "--.-"
+                },
+                "units": "°",
+                "componentRead": {
+                  "readId": 67,
+                  "decimals": 0,
+                  "type": "number",
+                  "factor": 0.1
+                }
+              }
+            },
+            "selector": {
+              "type": "selector",
+              "properties": {
+                "hide": {
+                  "type": "component",
+                  "componentRead": {
+                    "type": "number",
+                    "readId": 17
+                  },
+                  "componentValue": 7
+                },
+                "title": {
+                  "default": "Mode",
+                  "i18n": {
+                    "key": "hpc_mode_label"
+                  }
+                },
+                "info": {
+                  "icon": {
+                    "id": "global.help"
+                  },
+                  "text": [
+                    {
+                      "default": "Heating",
+                      "i18n": {
+                        "key": "hp_amitime_mode_title_heating"
+                      }
+                    },
+                    {
+                      "default": "Cooling",
+                      "i18n": {
+                        "key": "hp_amitime_mode_title_cooling"
+                      }
+                    },
+                    {
+                      "default": "Auto",
+                      "i18n": {
+                        "key": "hp_amitime_mode_title_auto"
+                      }
+                    }
+                  ],
+                  "description": [
+                    {
+                      "default": "\nBoost : Maximum power for fast heat-up.\nSmart : Automatic power adjustment between Ecosilence and Boost.\nEcosilence : Greater energy savings and lower noise level",
+                      "i18n": {
+                        "key": "hp_amitime_mode_text_heating"
+                      }
+                    },
+                    {
+                      "default": "\nBoost : Maximum power for fast cooling.\nSmart : Automatic power adjustment.\nEcosilence : Minimum power",
+                      "i18n": {
+                        "key": "hp_amitime_mode_text_cooling"
+                      }
+                    },
+                    {
+                      "default": "\nAutomatic smart mode when heating + cooling mode are activated",
+                      "i18n": {
+                        "key": "hp_amitime_mode_text_auto"
+                      }
+                    }
+                  ]
+                },
+                "componentRead": {
+                  "type": "number",
+                  "readId": 14
+                },
+                "componentStates": [
+                  {
+                    "label": {
+                      "default": "Smart Heating / Cooling",
+                      "i18n": {
+                        "key": "ami_mode_auto"
+                      }
+                    },
+                    "componentReadValue": 2,
+                    "componentWrite": {
+                      "value": 2,
+                      "writeId": 14,
+                      "type": "number"
+                    }
+                  },
+                  {
+                    "label": {
+                      "default": "Boost Heating",
+                      "i18n": {
+                        "key": "ami_mode_quick_heating"
+                      }
+                    },
+                    "componentReadValue": 3,
+                    "componentWrite": {
+                      "value": 3,
+                      "writeId": 14,
+                      "type": "number"
+                    }
+                  },
+                  {
+                    "label": {
+                      "default": "Smart Heating",
+                      "i18n": {
+                        "key": "ami_mode_heating"
+                      }
+                    },
+                    "componentReadValue": 0,
+                    "componentWrite": {
+                      "value": 0,
+                      "writeId": 14,
+                      "type": "number"
+                    }
+                  },
+                  {
+                    "label": {
+                      "default": "Silence Heating",
+                      "i18n": {
+                        "key": "ami_mode_low_noise_heating"
+                      }
+                    },
+                    "componentReadValue": 4,
+                    "componentWrite": {
+                      "value": 4,
+                      "writeId": 14,
+                      "type": "number"
+                    }
+                  },
+                  {
+                    "label": {
+                      "default": "Boost Cooling",
+                      "i18n": {
+                        "key": "ami_mode_quick_cooling"
+                      }
+                    },
+                    "componentReadValue": 5,
+                    "componentWrite": {
+                      "value": 5,
+                      "writeId": 14,
+                      "type": "number"
+                    }
+                  },
+                  {
+                    "label": {
+                      "default": "Smart Cooling",
+                      "i18n": {
+                        "key": "ami_mode_cooling"
+                      }
+                    },
+                    "componentReadValue": 1,
+                    "componentWrite": {
+                      "value": 1,
+                      "writeId": 14,
+                      "type": "number"
+                    }
+                  },
+                  {
+                    "label": {
+                      "default": "Silence Cooling",
+                      "i18n": {
+                        "key": "ami_mode_low_noise_cooling"
+                      }
+                    },
+                    "componentReadValue": 6,
+                    "componentWrite": {
+                      "value": 6,
+                      "writeId": 14,
+                      "type": "number"
+                    }
+                  }
+                ]
+              }
+            },
+            "tutorial": {}
+          }
+        }
+      }
+    },
+    "settings": {
+      "type": "iaqSettingsList",
+      "properties": {
+        "items": []
+      }
+    },
+    "info": {
+      "type": "iaqInfoList",
+      "properties": {
+        "extraEquipmentLabels": [
+          {
+            "type": "label",
+            "properties": {
+              "title": {
+                "default": "Running hours",
+                "i18n": {
+                  "key": "running_hours_title"
+                }
+              },
+              "componentRead": {
+                "readId": 0,
+                "type": "number"
+              }
+            }
+          }
+        ]
+      }
+    }
+  }
+}

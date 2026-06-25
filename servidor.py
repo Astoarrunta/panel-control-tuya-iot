@@ -2,11 +2,13 @@ import os
 import sys
 import argparse
 import signal
+import time
 from flask import Flask, jsonify, request, render_template
 from flask_cors import CORS
 from flask_basicauth import BasicAuth
 from dotenv import load_dotenv
 import tinytuya
+from fluidra_client import FluidraClient, FluidraAPIError, FluidraAuthError
 
 # 1. Configuración de Entorno
 load_dotenv() 
@@ -55,6 +57,87 @@ DEVICES = {
     "reloj": "bf3b6906e261e6d994hgg8",
     "aire": "bf8404d4e90f7cce02gzsq"
 }
+
+# 5. Configuración Fluidra
+FLUIDRA_USERNAME = os.getenv('FLUIDRA_USERNAME')
+FLUIDRA_PASSWORD = os.getenv('FLUIDRA_PASSWORD')
+FLUIDRA_DEVICE_ID = os.getenv('FLUIDRA_DEVICE_ID', 'LG25363958')
+
+_fluidra_client = None
+_fluidra_cache = {"data": None, "timestamp": 0}
+
+def get_fluidra_client():
+    """Inicializa de forma perezosa el cliente de Fluidra."""
+    global _fluidra_client
+    if _fluidra_client is None:
+        if FLUIDRA_USERNAME and FLUIDRA_PASSWORD:
+            try:
+                _fluidra_client = FluidraClient(FLUIDRA_USERNAME, FLUIDRA_PASSWORD)
+                _fluidra_client.login()
+                print("[OK] Fluidra Client inicializado correctamente")
+            except Exception as e:
+                print(f"[ERROR] Fallo al iniciar Fluidra Client: {e}")
+                _fluidra_client = None
+    return _fluidra_client
+
+def get_fluidra_data():
+    """Obtiene y cachea los datos de telemetría de Fluidra."""
+    now = time.time()
+    # Cacheamos durante 10 segundos para no saturar la API
+    if _fluidra_cache["data"] and (now - _fluidra_cache["timestamp"] < 10):
+        return _fluidra_cache["data"]
+        
+    client = get_fluidra_client()
+    if not client:
+        return {"error": "Fluidra no configurado"}
+        
+    try:
+        components = client.get_device_components(FLUIDRA_DEVICE_ID)
+        device_info = client.get_device(FLUIDRA_DEVICE_ID)
+        
+        comp_13 = components.get("13", {})  # Encendido/Apagado
+        comp_14 = components.get("14", {})  # Modo (0-6)
+        comp_15 = components.get("15", {})  # Temp Objetivo (setpoint)
+        comp_19 = components.get("19", {})  # Temp Agua (piscina)
+        comp_67 = components.get("67", {})  # Temp Aire
+        comp_0 = components.get("0", {})    # Horas de funcionamiento
+        
+        power_val = comp_13.get("reportedValue", comp_13.get("value"))
+        mode_val = comp_14.get("reportedValue", comp_14.get("value"))
+        target_temp_val = comp_15.get("reportedValue", comp_15.get("value"))
+        water_temp_val = comp_19.get("reportedValue", comp_19.get("value"))
+        air_temp_val = comp_67.get("reportedValue", comp_67.get("value"))
+        hours_val = comp_0.get("reportedValue", comp_0.get("value"))
+        
+        is_on = power_val == 1 if power_val is not None else False
+        mode_num = int(mode_val) if mode_val is not None else 0
+        target_temp = float(target_temp_val) / 10.0 if target_temp_val is not None else 0.0
+        water_temp = float(water_temp_val) / 10.0 if water_temp_val is not None else 0.0
+        air_temp = float(air_temp_val) / 10.0 if air_temp_val is not None else 0.0
+        running_hours = int(hours_val) if hours_val is not None else 0
+        
+        res = {
+            "connected": device_info.get("connected") if device_info else False,
+            "alarm_status": device_info.get("alarm_status") if device_info else "normal",
+            "alarm_count": device_info.get("alarm_count") if device_info else 0,
+            "error_code": device_info.get("error_code") if device_info else None,
+            "error_message": device_info.get("error_message") if device_info else None,
+            "power": is_on,
+            "mode": mode_num,
+            "target_temp": target_temp,
+            "water_temp": water_temp,
+            "air_temp": air_temp,
+            "running_hours": running_hours,
+            "name": device_info.get("name") if device_info else "Eco Elyo"
+        }
+        _fluidra_cache["data"] = res
+        _fluidra_cache["timestamp"] = now
+        return res
+    except Exception as e:
+        print(f"[ERROR] Error al leer datos de la API de Fluidra: {e}")
+        if _fluidra_cache["data"]:
+            return _fluidra_cache["data"]
+        return {"error": str(e)}
 
 # 6. Rutas de la Aplicación
 @app.route('/')
@@ -117,11 +200,15 @@ def get_data():
         aire_data["mode"] = int(result_a.get('mode', 0))
         aire_data["wind"] = int(result_a.get('wind', 0))
 
+    # Obtener estado de Fluidra
+    fluidra_data = get_fluidra_data()
+
     return jsonify({
         "thermostat": t_data, 
         "pow": p_data, 
         "piscina": piscina_data,
-        "aire": aire_data
+        "aire": aire_data,
+        "fluidra": fluidra_data
     })
 
 @app.route('/api/toggle', methods=['POST'])
@@ -176,6 +263,14 @@ def send_command():
             return jsonify({"status": "error", "message": error_msg})
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)})
+
+@app.route('/api/fluidra/command', methods=['POST'])
+@basic_auth.required
+def fluidra_command():
+    return jsonify({
+        "status": "error", 
+        "message": "Los comandos para la bomba de calor están desactivados temporalmente (Modo Lectura)."
+    }), 403
 
 @app.route('/api/trigger_aire_custom', methods=['POST'])
 @basic_auth.required

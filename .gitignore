@@ -13,3 +13,9 @@ test_*.py
 # Archivos grandes de inventario de dispositivos
 tuya-raw.json
 devices.json
+
+# Entornos virtuales
+venv/
+.venv/
+env/
+ENV/

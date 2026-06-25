@@ -163,6 +163,15 @@ def home():
     # Renderizar la vista landing page pasando el modo de ejecución al template
     return render_template('landing.html', mode=MODE)
 
+@app.route('/api/ip')
+def get_ip():
+    try:
+        import requests
+        res = requests.get('https://api.ipify.org?format=json')
+        return jsonify(res.json())
+    except Exception as e:
+        return jsonify({"error": str(e)})
+
 @app.route('/control')
 @basic_auth.required
 def index():

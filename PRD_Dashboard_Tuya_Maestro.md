@@ -69,3 +69,13 @@ Al intentar enviar un comando IR de aprendizaje personalizado (como "Modo Silenc
 - **Solución estándar:** En su lugar, se deben crear escenas manuales (Tap-to-Run) en la aplicación móvil Tuya Smart que ejecuten dichos botones IR. Posteriormente se activa la API **Smart Home Scene Linkage** y se disparan desde el backend local o cloud llamando al endpoint:
   `POST /v1.0/homes/{home_id}/scenes/{scene_id}/trigger`
 
+### E. Incidencia de Despliegue en Render: Bloqueo de IP por Lista Blanca (Tuya IP Whitelist)
+- **Problema detectado:** Al desplegar en Render.com, las consultas y conmutaciones a Tuya fallan sistemáticamente con el error:
+  `{'Error': 'Unable to Get Cloud Token', 'Err': '911', 'Payload': 'Cloud _gettoken() failed: "your ip(74.220.51.20) don\'t have access to this API"'}`
+- **Causa:** El proyecto Cloud en la consola de desarrolladores de Tuya (`iot.tuya.com`) tiene habilitada una lista blanca de IPs (IP Whitelist). Al realizarse la petición desde los servidores cloud de Render (cuya IP es `74.220.51.20` o similar en la infraestructura de AWS en EE. UU.), Tuya la bloquea.
+- **Solución requerida:** 
+  1. Acceder a **Tuya IoT Platform** ➡️ **Cloud** ➡️ **Development** ➡️ **(Tu Proyecto)** ➡️ pestaña **Authorization Key**.
+  2. Desactivar el interruptor general de la **IP Whitelist** o eliminar todas las IPs listadas en el cuadro de texto para dejar la lista vacía (permitiendo peticiones de cualquier IP siempre que lleven las firmas de clave correctas).
+  3. Guardar los cambios. Tener en cuenta que la propagación del cambio de seguridad en los servidores de Tuya puede demorarse entre 3 y 5 minutos.
+
+

@@ -200,6 +200,11 @@ def get_data():
     res_a = future_a.result()
     fluidra_data = future_f.result()
 
+    # Depuración de errores de Tuya Cloud
+    for name, res in [("termostato", res_t), ("consumo", res_p), ("agua", res_ap), ("reloj", res_rp), ("aire", res_a)]:
+        if isinstance(res, dict) and not res.get('success', False):
+            print(f"[ERROR TUYA] Fallo al consultar {name} en Render: {res}")
+
     t_data = {"switch": False, "temp_current": 0, "temp_set": 0}
     res_t_result = res_t.get('result', []) if isinstance(res_t, dict) else []
     for i in res_t_result:
@@ -253,6 +258,7 @@ def toggle():
             ]
         }
         res = cloud.sendcommand(data['id'], cmd_payload)
+        print(f"[ERROR TUYA] Respuesta al conmutar {data['id']}: {res}")
         
         if isinstance(res, dict) and res.get('success', False):
             return jsonify({"status": "success"})

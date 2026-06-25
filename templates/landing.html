@@ -120,11 +120,18 @@
                     <p>Gestionar dispositivos desde la red Wi-Fi de casa.</p>
                 </a>
 
-                <!-- Acceso al servidor en la nube (abre nueva pestaña) -->
+                <!-- Acceso al servidor Render en la nube (abre nueva pestaña) -->
+                <a href="https://panel-control-tuya-iot.onrender.com/control" class="landing-option-btn render-btn" target="_blank" rel="noopener noreferrer">
+                    <span style="font-size: 2.5rem;">⚡</span>
+                    <h2>Acceso Render</h2>
+                    <p>Acceso remoto premium (Fluidra + Tuya).</p>
+                </a>
+
+                <!-- Acceso al servidor PythonAnywhere en la nube (abre nueva pestaña) -->
                 <a href="https://cristajon.pythonanywhere.com/control" class="landing-option-btn cloud-btn" target="_blank" rel="noopener noreferrer">
-                    <span style="font-size: 2.5rem;">☁️</span>
-                    <h2>Acceso Cloud</h2>
-                    <p>Acceder de forma segura desde fuera de casa (PythonAnywhere).</p>
+                    <span style="font-size: 2.5rem;">🐍</span>
+                    <h2>Acceso PythonAnywhere</h2>
+                    <p>Servidor alternativo en la nube.</p>
                 </a>
             </div>
 
@@ -209,12 +216,14 @@
 
                 if (data.status === 'success') {
                     log.textContent += '\n✅ ¡Código subido a GitHub correctamente!\n';
-                    log.textContent += '\n📋 Ahora en PythonAnywhere ejecuta:\n';
-                    log.textContent += '   cd /home/cristajon && git pull\n';
+                    log.textContent += '\n⚡ DESPLIEGUE EN RENDER.COM:\n';
+                    log.textContent += '   Se iniciará el despliegue automático. Estará listo en 1-2 min.\n';
+                    log.textContent += '\n🐍 DESPLIEGUE EN PYTHONANYWHERE:\n';
+                    log.textContent += '   Ejecuta: cd /home/cristajon && git pull\n';
                     if (data.reload_needed) {
-                        log.textContent += '\n⚠️  Has cambiado servidor.py: haz Reload en la pestaña Web.\n';
+                        log.textContent += '   ⚠️  Requiere hacer Reload en la pestaña Web.\n';
                     } else {
-                        log.textContent += '\n✅ No necesitas Reload. Recarga el navegador con Ctrl+F5.\n';
+                        log.textContent += '   ✅ No necesitas Reload.\n';
                     }
                     btn.textContent = '✅ ¡Listo!';
                 } else {

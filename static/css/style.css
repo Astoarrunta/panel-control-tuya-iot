@@ -333,7 +333,7 @@ input:checked + .slider:before {
     border: 1px solid rgba(255, 255, 255, 0.05);
     border-radius: 32px;
     padding: 50px 40px;
-    max-width: 600px;
+    max-width: 800px;
     width: 90%;
     box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
 }
@@ -395,6 +395,11 @@ input:checked + .slider:before {
 .landing-option-btn.local-btn:hover {
     box-shadow: 0 10px 25px rgba(16, 185, 129, 0.15);
     border-color: rgba(16, 185, 129, 0.3);
+}
+
+.landing-option-btn.render-btn:hover {
+    box-shadow: 0 10px 25px rgba(139, 92, 246, 0.25);
+    border-color: rgba(139, 92, 246, 0.4);
 }
 
 .landing-option-btn.cloud-btn:hover {

@@ -344,16 +344,18 @@ def deploy():
     
     try:
         import subprocess
-        # Archivos cuya modificación requiere Reload en PythonAnywhere
-        REQUIEREN_RELOAD = ["servidor.py"]
-        
         # Detectar si hay cambios y qué archivos se modificaron
         status_res = subprocess.run(
             ["git", "status", "--porcelain"],
             capture_output=True, text=True
         )
         archivos_cambiados = [l[3:].strip() for l in status_res.stdout.splitlines()]
-        reload_needed = any(r in archivos_cambiados for r in REQUIEREN_RELOAD)
+        
+        # Cualquier cambio en archivos .py, dependencias o la carpeta fluidra_client requiere Reload
+        reload_needed = any(
+            r.endswith('.py') or r == 'requirements.txt' or 'fluidra_client' in r
+            for r in archivos_cambiados
+        )
         
         # Ejecutar git add + commit + push
         salida = ""

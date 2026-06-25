@@ -195,6 +195,14 @@ async function updateTelemetry() {
                 console.error("Error de Fluidra:", f.error);
                 document.getElementById('fluidra-status-txt').innerText = "ERROR";
                 document.getElementById('fluidra-status-txt').className = "status-text off";
+                
+                // Mostrar el error directamente en el banner para fácil diagnóstico
+                const alarmBanner = document.getElementById('fluidra-alarm-banner');
+                const alarmMsg = document.getElementById('fluidra-alarm-msg');
+                if (alarmBanner && alarmMsg) {
+                    alarmBanner.style.display = 'flex';
+                    alarmMsg.innerText = `Error: ${f.error}`;
+                }
             } else {
                 const isFluidraOn = f.power;
                 updateStatusUI('fluidra-status-txt', 'fluidra-switch', isFluidraOn);

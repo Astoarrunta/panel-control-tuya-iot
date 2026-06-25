@@ -107,33 +107,50 @@
     <div class="landing-wrapper">
         <div class="landing-card">
             <h1 class="landing-title">Centro de Control Domótico</h1>
+
+            {% if mode == 'local' %}
+            {# ── MODO LOCAL: muestra ambas opciones + herramientas de desarrollo ── #}
             <p class="landing-subtitle">Selecciona el entorno de acceso para gestionar tus dispositivos inteligentes Tuya</p>
-            
+
             <div class="landing-options">
-                <!-- Acceso al servidor local -->
+                <!-- Acceso al panel en este servidor local -->
                 <a href="/control" class="landing-option-btn local-btn">
                     <span style="font-size: 2.5rem;">🏠</span>
                     <h2>Acceso Local</h2>
                     <p>Gestionar dispositivos desde la red Wi-Fi de casa.</p>
                 </a>
-                
-                <!-- Acceso al servidor en la nube -->
+
+                <!-- Acceso al servidor en la nube (abre nueva pestaña) -->
                 <a href="https://cristajon.pythonanywhere.com/control" class="landing-option-btn cloud-btn" target="_blank" rel="noopener noreferrer">
                     <span style="font-size: 2.5rem;">☁️</span>
                     <h2>Acceso Cloud</h2>
                     <p>Acceder de forma segura desde fuera de casa (PythonAnywhere).</p>
                 </a>
             </div>
-            
-            <!-- Botón actualizar GitHub (solo útil en local) -->
+
+            <!-- Herramientas de desarrollo: solo disponibles en local -->
             <button onclick="abrirDeploy()" class="update-btn">🚀 Actualizar en GitHub</button>
-            
-            <!-- Botón para finalizar la ejecución del script servidor en local -->
             <button onclick="apagarServidorLocal()" class="shutdown-btn" style="margin-top: 8px;">🛑 Apagar Servidor Local</button>
+
+            {% else %}
+            {# ── MODO CLOUD: acceso directo al panel, sin opciones locales ── #}
+            <p class="landing-subtitle">Accede al panel de control de tus dispositivos inteligentes Tuya desde cualquier lugar</p>
+
+            <div class="landing-options">
+                <!-- En cloud solo hay una opción: entrar al panel remoto -->
+                <a href="/control" class="landing-option-btn cloud-btn" style="max-width: 320px; margin: 0 auto;">
+                    <span style="font-size: 2.5rem;">☁️</span>
+                    <h2>Entrar al Panel</h2>
+                    <p>Control remoto seguro de tus dispositivos inteligentes.</p>
+                </a>
+            </div>
+            {% endif %}
+
         </div>
     </div>
 
-    <!-- Modal de deploy a GitHub -->
+    {% if mode == 'local' %}
+    <!-- Modal de deploy a GitHub (solo en local) -->
     <div class="deploy-overlay" id="deploy-overlay">
         <div class="deploy-modal">
             <h2>🚀 Actualizar en GitHub</h2>
@@ -241,6 +258,7 @@
             }
         }
     </script>
+    {% endif %}
 </body>
 </html>
 

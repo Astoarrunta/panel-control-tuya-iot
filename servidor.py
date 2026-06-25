@@ -59,8 +59,8 @@ DEVICES = {
 # 6. Rutas de la Aplicación
 @app.route('/')
 def home():
-    # Renderizar la vista landing page desvinculada
-    return render_template('landing.html')
+    # Renderizar la vista landing page pasando el modo de ejecución al template
+    return render_template('landing.html', mode=MODE)
 
 @app.route('/control')
 @basic_auth.required

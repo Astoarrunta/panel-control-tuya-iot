@@ -7,6 +7,7 @@ from flask import Flask, jsonify, request, render_template
 from flask_cors import CORS
 from flask_basicauth import BasicAuth
 from dotenv import load_dotenv
+from concurrent.futures import ThreadPoolExecutor
 import tinytuya
 # Importación defensiva de fluidra_client (evita caídas si falta boto3 u otra dependencia)
 try:
@@ -175,17 +176,29 @@ def index():
         id_aire=DEVICES["aire"]
     )
 
+# Pool de hilos global para paralelizar consultas externas
+executor = ThreadPoolExecutor(max_workers=6)
+
 @app.route('/api/data')
 @basic_auth.required
 def get_data():
     if not cloud: return jsonify({"error": "Cloud no inicializada"}), 500
-    res_t = cloud.getstatus(DEVICES["termostato"])
-    res_p = cloud.getstatus(DEVICES["consumo"])
-    res_ap = cloud.getstatus(DEVICES["agua"])
-    res_rp = cloud.getstatus(DEVICES["reloj"])
     
-    # Consultar el estado del Aire Acondicionado virtual en Tuya Cloud (API Infrarrojos)
-    res_a = cloud.cloudrequest(f"/v2.0/infrareds/bfb88b2cabd1a639995kgy/remotes/{DEVICES['aire']}/ac/status", action="GET")
+    # Lanzar consultas en hilos separados en paralelo
+    future_t = executor.submit(cloud.getstatus, DEVICES["termostato"])
+    future_p = executor.submit(cloud.getstatus, DEVICES["consumo"])
+    future_ap = executor.submit(cloud.getstatus, DEVICES["agua"])
+    future_rp = executor.submit(cloud.getstatus, DEVICES["reloj"])
+    future_a = executor.submit(cloud.cloudrequest, f"/v2.0/infrareds/bfb88b2cabd1a639995kgy/remotes/{DEVICES['aire']}/ac/status", action="GET")
+    future_f = executor.submit(get_fluidra_data)
+    
+    # Recoger resultados (se ejecutan en paralelo en background)
+    res_t = future_t.result()
+    res_p = future_p.result()
+    res_ap = future_ap.result()
+    res_rp = future_rp.result()
+    res_a = future_a.result()
+    fluidra_data = future_f.result()
 
     t_data = {"switch": False, "temp_current": 0, "temp_set": 0}
     res_t_result = res_t.get('result', []) if isinstance(res_t, dict) else []

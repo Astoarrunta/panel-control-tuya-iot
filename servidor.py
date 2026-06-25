@@ -18,8 +18,9 @@ except ImportError as e:
     class FluidraAPIError(Exception): pass
     class FluidraAuthError(Exception): pass
 
-# 1. Configuración de Entorno
-load_dotenv() 
+# 1. Configuración de Entorno (Ruta absoluta para asegurar carga en WSGI/PythonAnywhere)
+script_dir = os.path.dirname(os.path.abspath(__file__))
+load_dotenv(os.path.join(script_dir, '.env')) 
 
 # 2. Argumentos de ejecución
 # Usamos parse_known_args para ignorar argumentos del servidor WSGI (PythonAnywhere)

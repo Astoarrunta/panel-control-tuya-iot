@@ -8,7 +8,15 @@ from flask_cors import CORS
 from flask_basicauth import BasicAuth
 from dotenv import load_dotenv
 import tinytuya
-from fluidra_client import FluidraClient, FluidraAPIError, FluidraAuthError
+# Importación defensiva de fluidra_client (evita caídas si falta boto3 u otra dependencia)
+try:
+    from fluidra_client import FluidraClient, FluidraAPIError, FluidraAuthError
+except ImportError as e:
+    print(f"[ADVERTENCIA] No se pudo importar fluidra_client (comprobar boto3): {e}")
+    FluidraClient = None
+    # Definimos clases dummy para evitar errores de referencia en el código
+    class FluidraAPIError(Exception): pass
+    class FluidraAuthError(Exception): pass
 
 # 1. Configuración de Entorno
 load_dotenv() 
@@ -70,6 +78,8 @@ def get_fluidra_client():
     """Inicializa de forma perezosa el cliente de Fluidra."""
     global _fluidra_client
     if _fluidra_client is None:
+        if FluidraClient is None:
+            return None
         if FLUIDRA_USERNAME and FLUIDRA_PASSWORD:
             try:
                 _fluidra_client = FluidraClient(FLUIDRA_USERNAME, FLUIDRA_PASSWORD)
